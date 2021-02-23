@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="applet" basedir=".">
+	<target name="jcpro">
+		<taskdef name="javacard" classname="pro.javacard.ant.JavaCard" classpath="/media/sf_Hck_repo/eclipse-workspace/ant-javacard.jar"/>
+	</target>
+	<target name="applet" depends="jcpro">
+		<javacard>
+			<cap jckit="/media/sf_Hck_repo/oracle_javacard_sdks/jc222_kit/" output="applet.cap" sources="/media/sf_Hck_repo/eclipse-workspace/seosTracer/src/">
+				<applet class="seosTracer.TestApplet" aid="0102030405060708"/>
+			</cap>
+		</javacard>
+	</target>
+</project>
