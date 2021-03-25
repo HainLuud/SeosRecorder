@@ -32,9 +32,7 @@ To compile the Java source code, one needs to use `ant`, but before compiling, o
 ![build.xml image](Images/change_build_xml.PNG?raw=true "build.xml fields that need to be changed")
 
 Once the values are changed, run `ant` and a similar output should be returned.
-```sh
-ant
-```
+
 ![ant command output](Images/ant.PNG?raw=true "ant command output")
 
 ## Uploading .cap file to the Java card
@@ -62,6 +60,7 @@ python3 receive_recordings.py
 ```
 ## Other scripts:
 **seos_communication.py** - This script sends the Java card the same commands recorded during a legitimate reader, and Seos card communication. 
+
 **receive_recordings.py** - This script sends the card instructions 0xF1-0xF6 commands, and so retrieves all information recorded. It then processes the collected data and prints out the commands in detail.
 
 [java-card-language]:<https://www.oracle.com/java/technologies/java-card-tech.html>
