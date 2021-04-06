@@ -28,8 +28,9 @@ public class SeosApplet extends Applet{
 	public static void install(byte[] ba, short ofs, byte len) {
 		(new SeosApplet()).register();
 	}
+	
 	/* Process logic
-	 * The card sends out the anomaly commands as recorded with the proxmark
+	 * The card sends out the anomaly commands as recorded with the Proxmark
 	 * During process it records APDUs sent to it 
 	 */
 	public void process(APDU apdu) {
@@ -61,20 +62,23 @@ public class SeosApplet extends Applet{
 			memoryArraySelector += 1;
 			memPointer = 0;
 		}
+
 		short recievedLen = (short)((buf[ISO7816.OFFSET_LC] + 6) & (short)0xff);
+		
+		// Record all commands sent to the card
+		if (buf[ISO7816.OFFSET_INS] < (byte)0xf0) {
+			// Copy received command to memory
+			Util.arrayCopy(buf, (short)0, destMemory, memPointer, recievedLen);
+			memPointer += recievedLen;
+			
+			// Set FF FF FF after received command
+			Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
+			memPointer += 3;
+		}
 		
 		switch (buf[ISO7816.OFFSET_INS]) {
 			case (byte)0xa4: // first APDU
 				apdu.setIncomingAndReceive(); // read APDU data bytes
-				//short len = (short)(buf[ISO7816.OFFSET_CDATA] & (short)0xff); // how much data should be sent back
-				
-				// Copy received command to memory
-				Util.arrayCopy(buf, (short)0, destMemory, memPointer, recievedLen);
-				memPointer += recievedLen;
-				
-				// Set FF FF FF after received command
-				Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
-				memPointer += 3;
 				
 				Util.arrayCopy(resp1, (short)0, buf, (short)0, (short)11);
 				apdu.setOutgoingAndSend((short)0, (short)11); 
@@ -83,12 +87,6 @@ public class SeosApplet extends Applet{
 				
 			case (byte)0xa5: // second APDU
 				apdu.setIncomingAndReceive(); // read APDU data bytes
-				Util.arrayCopy(buf, (short)0, destMemory, memPointer, recievedLen);
-				memPointer += recievedLen;
-				
-				// Set FF FF FF after received command
-				Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
-				memPointer += 3;
 				
 				Util.arrayCopy(resp2, (short)0, buf, (short)0, (short)76);
 				apdu.setOutgoingAndSend((short)0, (short)76); 
@@ -97,24 +95,12 @@ public class SeosApplet extends Applet{
 			case (byte)0x87: // third and fourth APDU
 				apdu.setIncomingAndReceive(); // read APDU data bytes
 				if (buf[ISO7816.OFFSET_LC] == 0x04) {
-					Util.arrayCopy(buf, (short)0, destMemory, memPointer, recievedLen);
-					memPointer += recievedLen;
-					
-					// Set FF FF FF after received command
-					Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
-					memPointer += 3;
-					
+
 					Util.arrayCopy(resp3, (short)0, buf, (short)0, (short)16);
 					apdu.setOutgoingAndSend((short)0, (short)16); 
 					return;
 				}
 				else if (buf[ISO7816.OFFSET_LC] == 0x2c) {
-					Util.arrayCopy(buf, (short)0, destMemory, memPointer, recievedLen);
-					memPointer += recievedLen;
-					
-					// Set FF FF FF after received command
-					Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
-					memPointer += 3;
 					
 					Util.arrayCopy(resp4, (short)0, buf, (short)0, (short)48);
 					apdu.setOutgoingAndSend((short)0, (short)48); 
@@ -124,12 +110,6 @@ public class SeosApplet extends Applet{
 
 			case (byte)0xcb: // fifth APDU
 				apdu.setIncomingAndReceive(); // read APDU data bytes
-				Util.arrayCopy(buf, (short)0, destMemory, memPointer, recievedLen);
-				memPointer += recievedLen;
-				
-				// Set FF FF FF after received command
-				Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
-				memPointer += 3;
 				
 				Util.arrayCopy(resp5, (short)0, buf, (short)0, (short)17);
 				apdu.setOutgoingAndSend((short)0, (short)17); 
@@ -144,8 +124,8 @@ public class SeosApplet extends Applet{
 				Util.arrayCopy(cmdEnd, (short)0, destMemory, memPointer, (short) 3);
 				memPointer += 3;
 				
-				Util.arrayCopy(resp6, (short)0, buf, (short)0, (short)2);
-				apdu.setOutgoingAndSend((short)0, (short)2); 
+				Util.arrayCopy(resp6, (short)0, buf, (short)0, (short)4);
+				apdu.setOutgoingAndSend((short)0, (short)4); 
 				return;
 				
 			case (byte)0xf1: // send back recordings

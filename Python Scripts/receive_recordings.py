@@ -64,7 +64,7 @@ def printVerbose(CLA, INS, P1, P2, Lc, Data, Le) -> None:
     pass
 
 def processDump(memoryArrays) -> None:
-    print(toHexString(memoryArrays[0]))
+    #print(toHexString(memoryArrays[0]))
     """
         APDU structure:
         CLA (1 byte)        Instruction class - indicates the type of command, e.g. interindustry or proprietary 
@@ -91,6 +91,11 @@ def processDump(memoryArrays) -> None:
             Lc = []
             DATA = []
             Le = []
+        elif [CLA,INS,P1,P2] == [0x00, 0xCA, 0x7F, 0x68]:
+            print("APDU {} \n\tUnknown APDU  00 CA 7F 68 00 00".format(cmdCounter))
+            cmdCounter += 1
+            memPointer += 5
+            continue
         else:
             # Discounting the possibility that Lc is absent
             if memory[memPointer] != 0:
@@ -99,14 +104,14 @@ def processDump(memoryArrays) -> None:
             else:
                 Lc = [memory[memPointer: memPointer + 3]]
                 memPointer += 3
-            
+            #print("asd",Lc)
             DATA = memory[memPointer: memPointer + int.from_bytes(Lc, byteorder='big', signed=False)]
             memPointer += int.from_bytes(Lc, byteorder='big', signed=False)
 
             if memory[memPointer: memPointer + 3] == [255,255,255]:
                 Le = []
             else: 
-                Le = memory[memPointer:memPointer + len(Lc)]
+                Le = memory[memPointer:memPointer + len(Lc)]#5C 03 5F C1 0C
                 if type(Le) is not list:Le = [Le]
             memPointer += len(Le)
         
@@ -128,7 +133,7 @@ def processDump(memoryArrays) -> None:
                 memPointer += 3
         else:
             print("Failed processing the recordings.")
-            print("Memory array:",memory)
+            print("Memory arrays:",memoryArrays)
             print("MemPointer", memPointer)
             exit()
         
@@ -140,7 +145,7 @@ def usage() -> None:
     print("OPTIONS:")
     print("   -w \t wipe Java card's memory")
     print("   -r \t retrieve card's recordings")
-    print("   -v \t verbose output")
+    #print("   -v \t verbose output")
     print('   -h \t this menu')
 
 def arg_process(argv) -> None:
@@ -158,8 +163,8 @@ def arg_process(argv) -> None:
             flags.append("wipe")
         elif opt == '-r':
             flags.append("return")
-        elif opt == "-v":
-            flags.append("verbose")
+        #elif opt == "-v":
+        #    flags.append("verbose")
         else:
             usage()
             sys.exit()
